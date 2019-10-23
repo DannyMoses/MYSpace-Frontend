@@ -75,10 +75,6 @@ def additem():
 
 @app.route("/item/<id>", methods=["GET"])
 def getitem(id):
-	if "user" not in session:
-		print("NO ONE LOGGED IN")
-		return { "status" : "ERROR", "message" : "not logged in" }, 200 #400
-
 	params = {"id" : id }
 
 	r = requests.get(url = (http + posts_route + "/item"), params=params)
@@ -89,10 +85,6 @@ def getitem(id):
 
 @app.route("/search", methods=["POST"])
 def search():
-	if "user" not in session:
-		print("NO ONE LOGGED IN")
-		return { "status" : "ERROR", "message" : "not logged in" }, 200 #400
-
 	content = request.json
 	r = requests.post(url = (http + posts_route + "/search"), json=content)
 
