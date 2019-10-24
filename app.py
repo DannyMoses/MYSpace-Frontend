@@ -1,4 +1,4 @@
-from flask import Flask, request, session, render_template, jsonify
+from flask import Flask, request, session, redirect, url_for, render_template, jsonify
 import requests
 import json
 
@@ -12,11 +12,24 @@ http = "http://"
 
 app.config["SECRET_KEY"] = "fatyoshi"
 
-#@app.route("/reset", methods=["POST"])
-#def reset_db():
-#	requests.post(url = (http + logins_route + "/reset"), json=content)
-#	requests.post(url = (http + posts_route + "/reset"), json=content)
-#	return { "status": "OK" }, 200
+### Webpage ###
+@app.route("/")
+def redirect_home():
+	return redirect(url_for('home'))
+
+@app.route("/home")
+def home():
+	user = None
+	if 'user' in session:
+		user = session['user']
+	return render_template("home.html", username=user)
+
+### Endpoints ###
+@app.route("/reset", methods=["POST"])
+def reset_db():
+	requests.post(url = (http + logins_route + "/reset_logins"))
+	requests.post(url = (http + posts_route + "/reset_posts"))
+	return { "status": "OK" }, 200
 
 @app.route("/adduser", methods=["POST"])
 def adduser():
@@ -34,7 +47,7 @@ def login():
 	print("content:", content)
 
 	if 'username' in session:
-		return { "status" : "OK" }, 200
+		return { "status" : "OK", "username": session['username']}, 200
 	r = requests.post(url = (http + logins_route + "/login"), json=content)
 
 	data = r.json()
@@ -60,13 +73,14 @@ def verify():
 
 @app.route("/additem", methods=["POST"])
 def additem():
-	#print("session", str(session))
+	print("session", str(session))
 	if "user" not in session:
 		print("NO ONE LOGGED IN")
-		return jsonify({ "status" : "ERROR", "message" : "not logged in" }), 200 #400
+		return jsonify({ "status" : "ERROR", "error" : "Not logged in" }), 200 #400
 
 	content = request.json
 	content["user"] = session["user"]
+	content["childType"] = "null" # TODO: Add replies and retweets
 	r = requests.post( url = (http + posts_route + "/additem"), json=content)
 
 	data = r.json()
