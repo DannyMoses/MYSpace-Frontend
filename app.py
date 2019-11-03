@@ -31,6 +31,7 @@ def reset_db():
 	requests.post(url = (http + posts_route + "/reset_posts"))
 	return { "status": "OK" }, 200
 
+## Logins ##
 @app.route("/adduser", methods=["POST"])
 def adduser():
 	content = request.json
@@ -39,7 +40,7 @@ def adduser():
 
 	data = r.json()
 	print("DATA", data)
-	return jsonify(data), 200
+	return jsonify(data), r.status_code
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -54,7 +55,7 @@ def login():
 	print("DATA:", data)
 	if data["status"] == "OK":
 		session["user"] = content["username"]
-	return jsonify(data), 200
+	return jsonify(data), r.status_code
 
 @app.route("/logout", methods=["POST"])
 def logout():
@@ -69,8 +70,9 @@ def verify():
 
 	data = r.json()
 
-	return jsonify(data), 200
+	return jsonify(data), r.status_code
 
+## Posts ##
 @app.route("/additem", methods=["POST"])
 def additem():
 	print("session", str(session))
@@ -85,7 +87,7 @@ def additem():
 
 	data = r.json()
 
-	return jsonify(data), 200
+	return jsonify(data), r.status_code
 
 @app.route("/item/<id>", methods=["GET"])
 def getitem(id):
@@ -95,7 +97,17 @@ def getitem(id):
 
 	data = r.json()
 
-	return jsonify(data), 200
+	return jsonify(data), r.status_code
+
+@app.route("/item/<id>", methods=["DELETE"])
+def deleteitem(id):
+	params = {"id" : id }
+
+	r = requests.delete(url = (http + posts_route + "/item"), params=params)
+
+	data = r.json()
+
+	return jsonify(data), r.status_code
 
 @app.route("/search", methods=["POST"])
 def search():
@@ -104,5 +116,5 @@ def search():
 
 	data = r.json()
 
-	return jsonify(data), 200
+	return jsonify(data), r.status_code
 
