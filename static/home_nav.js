@@ -64,6 +64,8 @@ $(document).ready(function() {
 		$('#additem_div').hide();
 		$('#getitem_div').hide();
 		$('#search_div').show();
+
+		$('#message').hide();
 	});
 });
 

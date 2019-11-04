@@ -2,9 +2,9 @@
 <html>
 	<head>
 		<title>MYSpace</title>
-		<link rel="stylesheet" type="text/css" href="/static/home.css">
+		<link rel="stylesheet" type="text/css" href="/static/default.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-		<script src="{{url_for('static', filename='nav.js')}}"></script>
+		<script src="{{url_for('static', filename='home_nav.js')}}"></script>
 		<script src="{{url_for('static', filename='home.js')}}"></script>
 	</head>
 
@@ -79,6 +79,9 @@
 		<div id="search_div" style="display: none;">
 			<h2>Search</h2>
 			<form id="search_form">
+				Text: <input type="text" name="q"><br>
+				Username (overrides following only): <input type="text" name="username"><br>
+				Following Only: <input type="checkbox" name="following" checked><br>
 				Timestamp (Unix Time): <input type="text" name="timestamp"><br>
 				Limit: <input type="text" name="limit"><br>
 				<input id="search_btn" type="submit" value="Submit">

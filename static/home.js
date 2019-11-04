@@ -263,6 +263,11 @@ $(document).ready(function() {
 		let form_data = $('#search_form').serializeArray();
 		json_data = serialarr_to_json(form_data);
 
+		if (!json_data['q'])
+			delete json_data['q']
+		if (!json_data['username'])
+			delete json_data['username']
+
 		if (json_data.hasOwnProperty('timestamp'))
 		{
 			json_data['timestamp'] = parseFloat(json_data['timestamp']);
@@ -275,6 +280,12 @@ $(document).ready(function() {
 			if (isNaN(json_data['limit']))
 				delete json_data['limit'];
 		}
+		if (json_data.hasOwnProperty('following') && !json_data['following'].localeCompare('on'))
+			json_data['following'] = true;
+		else
+			json_data['following'] = false;
+
+		console.log(json_data);
 
 		json_data = JSON.stringify(json_data)
 		$.ajax({

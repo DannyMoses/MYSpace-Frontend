@@ -25,6 +25,13 @@ def home():
 		user = session['user']
 	return render_template("home.html", username=user)
 
+@app.route("/profile")
+def profile():
+	user = None
+	if 'user' in session:
+		user = session['user']
+	return render_template("profile.html", username=user)
+
 
 ### Endpoints ###
 @app.route("/reset", methods=["POST"])
@@ -173,7 +180,7 @@ def search():
 	print(content)
 
 	if "user" in session:
-		if 'following' not in content or content['following'] == 'true':
+		if 'following' not in content or content['following']:
 			content['user'] = session['user']
 
 	print(content)
