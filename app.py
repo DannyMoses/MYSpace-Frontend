@@ -38,6 +38,7 @@ def profile():
 def reset_db():
 	requests.post(url = (http + logins_route + "/reset_logins"))
 	requests.post(url = (http + posts_route + "/reset_posts"))
+	requests.post(url = (http + profiles_route + "/reset_profiles"))
 	return { "status": "OK" }, 200
 
 
@@ -94,27 +95,33 @@ def get_profile(username):
 
 @app.route("/user/<username>/posts", methods=["GET"])
 def get_user_posts(username):
-	content = request.args
+	content = request.args.to_dict()
 	content['username'] = username
-	r = requests.get( url = (http + profiles_route + "/user/posts"), json=content )
+	if 'limit' in content:
+		content['limit'] = int(content['limit'])
+	r = requests.post( url = (http + profiles_route + "/user/posts"), json=content )
 
 	data = r.json()
 	return jsonify(data), r.status_code
 
 @app.route("/user/<username>/followers", methods=["GET"])
 def get_user_followers(username):
-	content = request.args
+	content = request.args.to_dict()
 	content['username'] = username
-	r = requests.get( url = (http + profiles_route + "/user/followers"), json=content )
+	if 'limit' in content:
+		content['limit'] = int(content['limit'])
+	r = requests.post( url = (http + profiles_route + "/user/followers"), json=content )
 
 	data = r.json()
 	return jsonify(data), r.status_code
 
 @app.route("/user/<username>/following", methods=["GET"])
 def get_user_following(username):
-	content = request.args
+	content = request.args.to_dict()
 	content['username'] = username
-	r = requests.get(url = (http + profiles_route + "/user/following"), json=content)
+	if 'limit' in content:
+		content['limit'] = int(content['limit'])
+	r = requests.post(url = (http + profiles_route + "/user/following"), json=content)
 
 	data = r.json()
 
@@ -126,8 +133,8 @@ def set_follow():
 		print("NO ONE LOGGED IN")
 		return jsonify({ "status" : "ERROR", "error" : "Not logged in" }), 200 #400
 
-	content['user'] = session['user']
 	content = request.json
+	content['user'] = session['user']
 	r = requests.post(url = (http + profiles_route + "/follow"), json=content)
 
 	data = r.json()
@@ -138,7 +145,6 @@ def set_follow():
 ## Posts ##
 @app.route("/additem", methods=["POST"])
 def additem():
-	print("session", str(session))
 	if "user" not in session:
 		print("NO ONE LOGGED IN")
 		return jsonify({ "status" : "ERROR", "error" : "Not logged in" }), 200 #400
@@ -164,9 +170,12 @@ def getitem(id):
 
 @app.route("/item/<id>", methods=["DELETE"])
 def deleteitem(id):
-	params = {"id" : id}
+	if "user" not in session:
+		print("NO ONE LOGGED IN")
+		return jsonify({ "status" : "ERROR", "error" : "Not logged in" }), 403
 
-	r = requests.delete(url = (http + posts_route + "/item"), params=params)
+	data = {"id" : id, "user": session['user']}
+	r = requests.delete(url = (http + posts_route + "/item"), json=data)
 
 	data = r.json()
 
