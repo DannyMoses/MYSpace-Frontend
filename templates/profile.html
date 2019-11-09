@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>MYSpace - {{username}}</title>
+		<link rel="stylesheet" type="text/css" href="/static/default.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script src="{{url_for('static', filename='profile_nav.js')}}"></script>
+		<script src="{{url_for('static', filename='profile_follow.js')}}"></script>
+		<script src="{{url_for('static', filename='profile.js')}}"></script>
+	</head>
+
+	<body>
+		<h1 id="site_header">{{username}}</h1>
+		<small id="current_user" style="display: none;">{{user}}</small>
+
+		<ul id="nav_bar">
+			<li class="nav"><input id="nav_back" class="nav_btn" type="button" value="Back"></li>
+			<li class="nav"><input id="nav_main" class="nav_btn" type="button" value="Profile"></li>
+			<li class="nav"><input id="nav_posts" class="nav_btn" type="button" value="Posts"></li>
+			<li class="nav"><input id="nav_followers" class="nav_btn" type="button" value="Followers"></li>
+			<li class="nav"><input id="nav_following" class="nav_btn" type="button" value="Following"></li>
+		</ul>
+
+		<div id="message" style="display: none;">
+			<h4 id="msg_header">Message Header</h4>
+			<p id="msg_text">Message Text</p>
+		</div>
+
+		<!-- Profile -->
+		<div id="profile_div" class="page_div">
+			<h2>Profile</h2>
+			<input id="follow_btn" type="button" value="Follow" style="display: none;">
+			<input id="unfollow_btn" type="button" value="Unfollow" style="display: none;">
+			<h4>Number of Followers: </h4><h4 id="num_followers">{{num_followers}}</h4><br>
+			<h4>Following: </h4><h4 id="num_following">{{num_following}}</h4>
+		</div>
+
+		<!-- Posts -->
+		<div id="posts_div" class="page_div" style="display: none;">
+			<h2>Posts</h2>
+			<form id="posts_form">
+				Limit: <input type="text" name="limit"><br>
+				<input id="posts_btn" type="submit" value="Submit">
+			</form>
+			<p id="posts_text" style="display:none;"></p>
+		</div>
+
+		<!-- Followers -->
+		<div id="followers_div" class="page_div" style="display: none;">
+			<h2>Followers</h2>
+			<form id="followers_form">
+				Limit: <input type="text" name="limit"><br>
+				<input id="followers_btn" type="submit" value="Submit">
+			</form>
+			<p id="followers_text" style="display:none;"></p>
+		</div>
+
+		<!-- Following -->
+		<div id="following_div" class="page_div" style="display: none;">
+			<h2>Following</h2>
+			<form id="following_form">
+				Limit: <input type="text" name="limit"><br>
+				<input id="following_btn" type="submit" value="Submit">
+			</form>
+			<p id="following_text" style="display:none;"></p>
+		</div>
+
+	</body>
+</html>
+

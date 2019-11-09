@@ -9,12 +9,13 @@
 	</head>
 
 	<body>
-		<h1 id="site_header">Welcome to Moses-Yang Space</h1>
+		<h1 id="site_header">Welcome {{welcome_text}}</h1>
 
 		<ul id="nav_bar">
 			<li class="nav"><input id="nav_login" class="nav_btn" type="button" value="Log In"></li>
 			<li class="nav"><input id="nav_register" class="nav_btn" type="button" value="Register"></li>
 			<li class="nav"><input id="nav_verify" class="nav_btn" type="button" value="Verify"></li>
+			<li class="nav"><input id="nav_profile" class="nav_btn" type="button" value="View Profile"></li>
 			<li class="nav"><input id="nav_additem" class="nav_btn" type="button" value="Add Item"></li>
 			<li class="nav"><input id="nav_getitem" class="nav_btn" type="button" value="Get Item"></li>
 			<li class="nav"><input id="nav_search" class="nav_btn" type="button" value="Search"></li>
@@ -24,10 +25,11 @@
 		<div id="message" style="display: none;">
 			<h4 id="msg_header">Message Header</h4>
 			<p id="msg_text">Message Text</p>
+			<input id="delete_btn" type="button" value="Delete" style="display: none;">
 		</div>
 
 		<!-- Login -->
-		<div id="login_div">
+		<div id="login_div" class="form_div">
 			<h2>Log In</h2>
 			<form id="login_form">
 				Username: <input type="text" name="username" required><br>
@@ -37,18 +39,18 @@
 		</div>
 
 		<!-- Register -->
-		<div id="register_div" style="display: none;">
+		<div id="register_div" class="form_div" style="display: none;">
 			<h2>Register</h2>
 			<form id="register_form">
 				Username: <input type="text" name="username" required><br>
-				Password: <input type="text" name="password" required><br>
+				Password: <input type="password" name="password" required><br>
 				Email: <input type="email" name="email" required><br>
 				<input id="register_btn" type="submit" value="Submit">
 			</form>
 		</div>
 
 		<!-- Verify -->
-		<div id="verify_div" style="display: none;">
+		<div id="verify_div" class="form_div" style="display: none;">
 			<h2>Verify User</h2>
 			<form id="verify_form">
 				Email: <input type="text" name="email" required><br>
@@ -57,8 +59,17 @@
 			</form>
 		</div>
 
+		<!-- Login -->
+		<div id="profile_div" class="form_div" style="display: none;">
+			<h2>View Profile</h2>
+			<form id="profile_form" action="/profile">
+				Username: <input type="text" name="username" required><br>
+				<input id="profile_btn" type="submit" value="Go">
+			</form>
+		</div>
+
 		<!-- Add Item -->
-		<div id="additem_div" style="display: none;">
+		<div id="additem_div" class="form_div" style="display: none;">
 			<h2>Add Item</h2>
 			<form id="additem_form">
 				Text: <input type="text" name="content">
@@ -67,7 +78,7 @@
 		</div>
 
 		<!-- Get Item -->
-		<div id="getitem_div" style="display: none;">
+		<div id="getitem_div" class="form_div" style="display: none;">
 			<h2>Get Item</h2>
 			<form id="getitem_form">
 				ID: <input type="text" name="uuid">
@@ -76,7 +87,7 @@
 		</div>
 
 		<!-- Search -->
-		<div id="search_div" style="display: none;">
+		<div id="search_div" class="form_div" style="display: none;">
 			<h2>Search</h2>
 			<form id="search_form">
 				Text: <input type="text" name="q"><br>

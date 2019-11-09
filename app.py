@@ -20,17 +20,28 @@ def redirect_home():
 
 @app.route("/home")
 def home():
-	user = None
+	welcome = "to Moses-Yang Space"
 	if 'user' in session:
-		user = session['user']
-	return render_template("home.html", username=user)
+		welcome = session['user']
+	return render_template("home.html", welcome_text=welcome)
 
-@app.route("/profile")
+@app.route("/profile", methods=["GET", "POST"])
 def profile():
-	user = None
-	if 'user' in session:
+	content = request.form
+
+	user = ""
+	if 'user' in session and session['user'] != content['username']:
 		user = session['user']
-	return render_template("profile.html", username=user)
+
+	print(content)
+	print(user)
+
+	return render_template("profile.html",
+			username=content['username'],
+			user=user,
+			email=content['email'],
+			num_followers=content['followers'],
+			num_following=content['following'])
 
 
 ### Endpoints ###
@@ -58,8 +69,8 @@ def login():
 	content = request.json
 	print("content:", content)
 
-	if 'username' in session:
-		return { "status" : "OK", "username": session['username']}, 200
+	if 'user' in session:
+		return { "status" : "OK", "username": session['user']}, 200
 	r = requests.post(url = (http + logins_route + "/login"), json=content)
 
 	data = r.json()
@@ -97,6 +108,7 @@ def get_profile(username):
 def get_user_posts(username):
 	content = request.args.to_dict()
 	content['username'] = username
+	print(content)
 	if 'limit' in content:
 		content['limit'] = int(content['limit'])
 	r = requests.post( url = (http + profiles_route + "/user/posts"), json=content )
@@ -135,7 +147,23 @@ def set_follow():
 
 	content = request.json
 	content['user'] = session['user']
+	print(content)
 	r = requests.post(url = (http + profiles_route + "/follow"), json=content)
+
+	data = r.json()
+
+	return jsonify(data), r.status_code
+
+@app.route("/follow", methods=["GET"])
+def get_follow():
+	if "user" not in session:
+		print("NO ONE LOGGED IN")
+		return jsonify({ "status" : "ERROR", "error" : "Not logged in" }), 200 #400
+
+	content = request.args.to_dict()
+	content['user'] = session['user']
+	print(content)
+	r = requests.get(url = (http + profiles_route + "/follow"), json=content)
 
 	data = r.json()
 

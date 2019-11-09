@@ -1,5 +1,25 @@
 console.log('Form functions loaded');
 
+function post_page(json_data, path)
+{
+	let form = document.createElement('form');
+	form.style.visibility = 'hidden';
+	form.method = 'POST';
+	form.action = path;
+
+	keys = Object.keys(json_data);
+	for (let key of Object.keys(json_data))
+	{
+		let input = document.createElement('input');
+		input.name = key;
+		input.value = json_data[key];
+		form.appendChild(input);
+	}
+
+	document.body.appendChild(form);
+	form.submit();
+}
+
 function serialarr_to_json(arr)
 {
 	json_data = {};
@@ -72,22 +92,14 @@ function format_search_result(arr)
 
 $(document).ready(function() {
 	//$('#message').hide();
-
-	// Form Submit Binding
-	// This might not actually do anything...
-	$('#login_form')[0].onsubmit = null;
-	$('#register_form')[0].onsubmit = null;
-	$('#verify_form')[0].onsubmit = null;
-	$('#additem_form')[0].onsubmit = null;
-	$('#getitem_form')[0].onsubmit = null;
-	$('#search_form')[0].onsubmit = null;
+	let current_item = null;
 
 	$('#login_form').submit(function(event) {
 		event.preventDefault(); // Prevents default submit action (GET query)
 
 		//let form_data = JSON.stringify($('#login_form').serializeArray());
 		let form_data = $('#login_form').serializeArray();
-		json_data = serialarr_to_json(form_data);
+		let json_data = serialarr_to_json(form_data);
 		json_data = JSON.stringify(json_data);
 		$.ajax({
 			type: "POST",
@@ -109,7 +121,7 @@ $(document).ready(function() {
 					$('#login_form')[0].reset();
 				}
 			},
-			failure: function(result){
+			error: function(result){
 				failure("Log in", result);
 				$('#login_form')[0].reset();
 			}
@@ -133,7 +145,7 @@ $(document).ready(function() {
 					failure("Logout", result);
 				}
 			},
-			failure: function(result){
+			error: function(result){
 				failure("Logout", result);
 			}
 		});
@@ -143,7 +155,7 @@ $(document).ready(function() {
 		event.preventDefault();
 
 		let form_data = $('#register_form').serializeArray();
-		json_data = serialarr_to_json(form_data);
+		let json_data = serialarr_to_json(form_data);
 		json_data = JSON.stringify(json_data);
 		$.ajax({
 			type: "POST",
@@ -162,7 +174,7 @@ $(document).ready(function() {
 					failure("Register", result);
 				}
 			},
-			failure: function(result){
+			error: function(result){
 				failure("Register", result);
 			}
 		});
@@ -172,7 +184,7 @@ $(document).ready(function() {
 		event.preventDefault();
 
 		let form_data = $('#verify_form').serializeArray();
-		json_data = serialarr_to_json(form_data);
+		let json_data = serialarr_to_json(form_data);
 		json_data = JSON.stringify(json_data);
 		$.ajax({
 			type: "POST",
@@ -191,8 +203,39 @@ $(document).ready(function() {
 					failure("Verify", result);
 				}
 			},
-			failure: function(result){
+			error: function(result){
 				failure("Verify", result);
+			}
+		});
+	});
+
+	$('#profile_form').submit(function(event) {
+		event.preventDefault();
+
+		let form_data = $('#profile_form').serializeArray();
+		json_data = serialarr_to_json(form_data);
+		username = json_data['username']
+		json_data = JSON.stringify(json_data);
+		$.ajax({
+			type: "GET",
+			url: `/user/${username}`,
+			dataType: 'json',
+			success: function(result){
+				if (!result['status'].localeCompare('OK'))
+				{
+					success("View Profile", result);
+					$('#profile_form')[0].reset();
+					profile = result['user'];
+					profile['username'] = username;
+					post_page(profile, '/profile');
+				}
+				else
+				{
+					failure("View Profile", result);
+				}
+			},
+			error: function(result){
+				failure("View Profile", result);
 			}
 		});
 	});
@@ -201,7 +244,7 @@ $(document).ready(function() {
 		event.preventDefault();
 
 		let form_data = $('#additem_form').serializeArray();
-		json_data = serialarr_to_json(form_data);
+		let json_data = serialarr_to_json(form_data);
 		json_data = JSON.stringify(json_data);
 		$.ajax({
 			type: "POST",
@@ -221,7 +264,7 @@ $(document).ready(function() {
 					failure("Add item", result);
 				}
 			},
-			failure: function(result){
+			error: function(result){
 				failure("Add item", result);
 			}
 		});
@@ -231,7 +274,7 @@ $(document).ready(function() {
 		event.preventDefault();
 
 		let form_data = $('#getitem_form').serializeArray();
-		json_data = serialarr_to_json(form_data);
+		let json_data = serialarr_to_json(form_data);
 		$.ajax({
 			type: "GET",
 			url: `/item/${json_data['uuid']}`,
@@ -240,19 +283,46 @@ $(document).ready(function() {
 				if (!result['status'].localeCompare('OK'))
 				{
 					success("Get item", result);
+					current_item = json_data;
 					$('#getitem_form')[0].reset();
-					//$('#msg_header').text(`User: ${result['item']['username']}`);
+
 					str = format_item(result['item'])
 					$('#msg_text').html(str);
-					//$('#msg_text').text(`Content: ${result['item']['content']}`);
+					$('#delete_btn').show();
 				}
 				else
 				{
 					failure("Get item", result);
+					$('#delete_btn').hide();
 				}
 			},
-			failure: function(result){
+			error: function(result){
 				failure("Get item", result);
+				$('#delete_btn').hide();
+			}
+		});
+	});
+
+	$('#delete_btn').bind('click', function() {
+		$.ajax({
+			type: "DELETE",
+			url: `/item/${current_item['uuid']}`,
+			dataType: 'json',
+			success: function(result){
+				if (!result['status'].localeCompare('OK'))
+				{
+					success("Delete item", result);
+					$('#delete_btn').hide();
+				}
+				else
+				{
+					let str = $('#msg_text').html();
+					failure("Delete item", result);
+					$('#msg_text').html(str);
+				}
+			},
+			error: function(result){
+				failure("Delete item", result['responseJSON']);
 			}
 		});
 	});
@@ -261,7 +331,7 @@ $(document).ready(function() {
 		event.preventDefault();
 
 		let form_data = $('#search_form').serializeArray();
-		json_data = serialarr_to_json(form_data);
+		let json_data = serialarr_to_json(form_data);
 
 		if (!json_data['q'])
 			delete json_data['q']
@@ -310,11 +380,12 @@ $(document).ready(function() {
 					$('#search_text').hide();
 				}
 			},
-			failure: function(result){
+			error: function(result){
 				failure("Search", result);
 				$('#search_text').hide();
 			}
 		});
 	});
+
 });
 
