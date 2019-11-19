@@ -1,4 +1,5 @@
 from flask import Flask, request, session, redirect, url_for, render_template, jsonify
+from werkzeug import secure_filename
 import requests
 import json
 
@@ -179,7 +180,6 @@ def additem():
 
 	content = request.json
 	content["user"] = session["user"]
-	content["childType"] = "null" # TODO: Add replies and retweets
 	r = requests.post( url = (http + posts_route + "/additem"), json=content)
 
 	data = r.json()
@@ -211,6 +211,22 @@ def deleteitem(id):
 
 	return jsonify(data), r.status_code
 
+@app.route("/item/<id>/like", methods=["POST"])
+def likeitem(id):
+	if "user" not in session:
+		print("NO ONE LOGGED IN")
+		return jsonify({ "status" : "ERROR", "error" : "Not logged in" }), 200 # 400
+
+	data = request.json
+	data['id'] = id
+	data['user'] = session['user']
+
+	r = requests.post(url = (http + posts_route + "/item/like"), json=data)
+
+	data = r.json()
+
+	return jsonify(data), r.status_code
+
 @app.route("/search", methods=["POST"])
 def search():
 	content = request.json
@@ -230,4 +246,38 @@ def search():
 	data = r.json()
 
 	return jsonify(data), r.status_code
+
+@app.route("/addmedia", methods=["POST"])
+def addmedia():
+	print("/ADDMEDIA() CALLED")
+	print("DATA", request.values)
+	if "user" not in session:
+		print("NO ONE LOGGED IN")
+		return jsonify({ "status" : "error", "error" : "Not logged in" }), 200 # 400
+
+	print('dict',request.files)
+	print('content',request.files['content'])
+	filename = secure_filename(request.files['content'].filename)
+	mimetype = request.files['content'].content_type
+	#r = requests.post(url = (http + posts_route + "/addmedia"), files={'content': (filename, request.files['content'], mimetype)})
+	r = requests.post(url = (http + posts_route + "/addmedia"), files=request.files)
+
+	print("request finished")
+	
+	data = r.json()
+
+	print(data)
+
+	return jsonify(data), r.status_code
+
+@app.route("/media/<id>", methods=["GET"])
+def getmedia(id):
+	params = {"id" : id}
+
+	r = requests.get(url = (http + posts_route + "/media"), params=params)
+
+	print(r)
+	#print(r.content)
+
+	return r.content, r.status_code
 

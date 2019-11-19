@@ -1,6 +1,6 @@
 config = {
-	"logins_route" : "PUT SOMETHING HERE",
-	"posts_route" : "PUT SOMETHING HERE",
-	"profiles_route" : "PUT SOMETHING HERE"
-	}
+    "logins_route" : "10.142.0.10",
+    "posts_route" : "10.150.0.20",
+    "profiles_route" : "10.150.0.21"
+}
 
