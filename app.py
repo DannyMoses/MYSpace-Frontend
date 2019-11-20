@@ -1,7 +1,9 @@
 from flask import Flask, request, session, redirect, url_for, render_template, jsonify
 from werkzeug import secure_filename
 import requests
-import json
+
+import json, logging
+from pprint import pprint
 
 from config import config
 
@@ -13,6 +15,12 @@ profiles_route = config["profiles_route"]
 http = "http://"
 
 app.config["SECRET_KEY"] = "fatyoshi"
+
+# Setup logging
+if __name__ != '__main__':
+	gunicorn_logger = logging.getLogger('gunicorn.error')
+	app.logger.handlers = gunicorn_logger.handlers
+	app.logger.setLevel(gunicorn_logger.level)
 
 ### Webpage ###
 @app.route("/")
@@ -29,6 +37,7 @@ def home():
 @app.route("/profile", methods=["GET", "POST"])
 def profile():
 	content = request.form
+	app.logger.debug("/profile form: " + json.dumps(content))
 
 	user = ""
 	if 'user' in session and session['user'] != content['username']:
@@ -48,6 +57,7 @@ def profile():
 ### Endpoints ###
 @app.route("/reset", methods=["POST"])
 def reset_db():
+	app.logger.warning("/reset called")
 	requests.post(url = (http + logins_route + "/reset_logins"))
 	requests.post(url = (http + posts_route + "/reset_posts"))
 	requests.post(url = (http + profiles_route + "/reset_profiles"))
@@ -59,6 +69,7 @@ def reset_db():
 def adduser():
 	content = request.json
 	print("CONTENT", content)
+	app.logger.debug("/adduser content: " + json.dumps(content))
 	r = requests.post(url = (http + logins_route + "/adduser"), json=content)
 
 	data = r.json()
@@ -69,6 +80,7 @@ def adduser():
 def login():
 	content = request.json
 	print("content:", content)
+	app.logger.debug("/login json: " + json.dumps(content))
 
 	if 'user' in session:
 		return { "status" : "OK", "username": session['user']}, 200
@@ -76,6 +88,7 @@ def login():
 
 	data = r.json()
 	print("DATA:", data)
+	app.logger.debug("/login return: " + json.dumps(data))
 	if data["status"] == "OK":
 		session["user"] = content["username"]
 	return jsonify(data), r.status_code
@@ -89,6 +102,7 @@ def logout():
 @app.route("/verify", methods=["POST"])
 def verify():
 	content = request.json
+	app.logger.debug("/verify json: " + json.dumps(content))
 	r = requests.post( url = (http + logins_route + "/verify"), json=content)
 
 	data = r.json()
@@ -149,6 +163,7 @@ def set_follow():
 	content = request.json
 	content['user'] = session['user']
 	print(content)
+	app.logger.debug("POST /follow json: " + json.dumps(content))
 	r = requests.post(url = (http + profiles_route + "/follow"), json=content)
 
 	data = r.json()
@@ -164,6 +179,7 @@ def get_follow():
 	content = request.args.to_dict()
 	content['user'] = session['user']
 	print(content)
+	app.logger.debug("GET /follow args: " + json.dumps(content))
 	r = requests.get(url = (http + profiles_route + "/follow"), json=content)
 
 	data = r.json()
@@ -203,13 +219,16 @@ def deleteitem(id):
 		return jsonify({ "status" : "ERROR", "error" : "Not logged in" }), 403
 
 	data = {"id" : id, "user": session['user']}
+	print(80*'=')
+	print("DELETE DATA:", data)
 	r = requests.delete(url = (http + posts_route + "/item"), json=data)
 
-	data = r.json()
+	#data = r.json()
 
-	print(data)
-
-	return jsonify(data), r.status_code
+	#print(data)
+	
+	print("STATUS CODE:", r.status_code)
+	return "RETURN!", r.status_code
 
 @app.route("/item/<id>/like", methods=["POST"])
 def likeitem(id):
@@ -244,6 +263,9 @@ def search():
 	print("request finished")
 
 	data = r.json()
+	
+	print(80*'=')
+	print("SEARCH DATA:", data)
 
 	return jsonify(data), r.status_code
 
@@ -260,7 +282,7 @@ def addmedia():
 	filename = secure_filename(request.files['content'].filename)
 	mimetype = request.files['content'].content_type
 	#r = requests.post(url = (http + posts_route + "/addmedia"), files={'content': (filename, request.files['content'], mimetype)})
-	r = requests.post(url = (http + posts_route + "/addmedia"), files=request.files)
+	r = requests.post(url = (http + posts_route + "/addmedia"), files=request.files, data={"user" : session['user']})
 
 	print("request finished")
 	
