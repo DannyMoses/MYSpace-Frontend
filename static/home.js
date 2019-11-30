@@ -73,10 +73,20 @@ function unix_to_datetime(timestamp)
 
 function format_item(item)
 {
-	return `${item['username']}: ${item['content']}<br>
-		${unix_to_datetime(item['timestamp'])}<br>
-		Likes: ${item['property']['likes']}, Retweets: ${item['retweeted']}<br>
-		ID: ${item['id']}<br>`;
+	let str = `${item['username']}: ${item['content']}<br>
+			${unix_to_datetime(item['timestamp'])}<br>
+			Likes: ${item['property']['likes']}, Retweets: ${item['retweeted']}<br>
+			ID: ${item['id']}<br>`;
+
+	if (item['childType'] !== null) {
+		str += `Child-Type: ${item['childType']}<br>
+			Parent ID: ${item['parent']}<br>`;
+	}
+	if (item['media'].length > 0) {
+		str += `Media: ${item['media'].join(', ')}<br>`;
+	}
+
+	return str;
 }
 
 function format_search_result(arr)
@@ -213,8 +223,8 @@ $(document).ready(function() {
 		event.preventDefault();
 
 		let form_data = $('#profile_form').serializeArray();
-		json_data = serialarr_to_json(form_data);
-		username = json_data['username']
+		let json_data = serialarr_to_json(form_data);
+		let username = json_data['username']
 		json_data = JSON.stringify(json_data);
 		$.ajax({
 			type: "GET",
@@ -275,56 +285,7 @@ $(document).ready(function() {
 
 		let form_data = $('#getitem_form').serializeArray();
 		let json_data = serialarr_to_json(form_data);
-		$.ajax({
-			type: "GET",
-			url: `/item/${json_data['uuid']}`,
-			dataType: 'json',
-			success: function(result){
-				if (!result['status'].localeCompare('OK'))
-				{
-					success("Get item", result);
-					current_item = json_data;
-					$('#getitem_form')[0].reset();
-
-					str = format_item(result['item'])
-					$('#msg_text').html(str);
-					$('#delete_btn').show();
-				}
-				else
-				{
-					failure("Get item", result);
-					$('#delete_btn').hide();
-				}
-			},
-			error: function(result){
-				failure("Get item", result);
-				$('#delete_btn').hide();
-			}
-		});
-	});
-
-	$('#delete_btn').bind('click', function() {
-		$.ajax({
-			type: "DELETE",
-			url: `/item/${current_item['uuid']}`,
-			dataType: 'json',
-			success: function(result){
-				if (!result['status'].localeCompare('OK'))
-				{
-					success("Delete item", result);
-					$('#delete_btn').hide();
-				}
-				else
-				{
-					let str = $('#msg_text').html();
-					failure("Delete item", result);
-					$('#msg_text').html(str);
-				}
-			},
-			error: function(result){
-				failure("Delete item", result['responseJSON']);
-			}
-		});
+		post_page(json_data, '/post');
 	});
 
 	$('#search_form').submit(function(event) {
@@ -332,28 +293,31 @@ $(document).ready(function() {
 
 		let form_data = $('#search_form').serializeArray();
 		let json_data = serialarr_to_json(form_data);
+		let key;
 
-		if (!json_data['q'])
-			delete json_data['q']
-		if (!json_data['username'])
-			delete json_data['username']
+		// Check for empty strings
+		for (key of ['q', 'username', 'parent']) {
+			if (!json_data[key])
+				delete json_data[key];
+		}
 
-		if (json_data.hasOwnProperty('timestamp'))
-		{
-			json_data['timestamp'] = parseFloat(json_data['timestamp']);
-			if (isNaN(json_data['timestamp']))
-				delete json_data['timestamp'];
+		// Convert numbers
+		for (key of ['timestamp', 'limit']) {
+			if (json_data.hasOwnProperty(key))
+			{
+				json_data[key] = parseFloat(json_data[key]);
+				if (isNaN(json_data[key]))
+					delete json_data[key];
+			}
 		}
-		if (json_data.hasOwnProperty('limit'))
-		{
-			json_data['limit'] = parseInt(json_data['limit']);
-			if (isNaN(json_data['limit']))
-				delete json_data['limit'];
+
+		// Check checkbox and set boolean value
+		for (key of ['following', 'replies', 'hasMedia']) {
+			if (json_data.hasOwnProperty(key) && !json_data[key].localeCompare('on'))
+				json_data[key] = true;
+			else
+				json_data[key] = false;
 		}
-		if (json_data.hasOwnProperty('following') && !json_data['following'].localeCompare('on'))
-			json_data['following'] = true;
-		else
-			json_data['following'] = false;
 
 		console.log(json_data);
 

@@ -10,6 +10,8 @@
 
 	<body>
 		<h1 id="site_header">Welcome {{welcome_text}}</h1>
+		<small id="current_user" style="display: none;">{{user}}</small>
+		<small id="current_item" style="display: none;"></small>
 
 		<ul id="nav_bar">
 			<li class="nav"><input id="nav_login" class="nav_btn" type="button" value="Log In"></li>
@@ -25,7 +27,6 @@
 		<div id="message" style="display: none;">
 			<h4 id="msg_header">Message Header</h4>
 			<p id="msg_text">Message Text</p>
-			<input id="delete_btn" type="button" value="Delete" style="display: none;">
 		</div>
 
 		<!-- Login -->
@@ -95,6 +96,13 @@
 				Following Only: <input type="checkbox" name="following" checked><br>
 				Timestamp (Unix Time): <input type="text" name="timestamp"><br>
 				Limit: <input type="text" name="limit"><br>
+				Rank: <select name="rank" size="1">
+					<option value="interest">Interest</option>
+					<option value="time">Most Recent</option>
+				</select><br>
+				Parent ID: <input type="text" name="parent"><br>
+				Include replies: <input type="checkbox" name="replies" checked><br>
+				Has Media: <input type="checkbox" name="hasMedia"><br>
 				<input id="search_btn" type="submit" value="Submit">
 			</form>
 

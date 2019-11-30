@@ -1,9 +1,9 @@
 console.log('Follow functions loaded');
 
 $(document).ready(function() {
-	username = $('#site_header').text()
-	user = $('#current_user').text()
-	is_follow = null;
+	let username = $('#site_header').text();
+	let user = $('#current_user').text();
+	let is_follow = null;
 
 	// Enable follow/unfollow buttons
 	if (user)
@@ -107,13 +107,13 @@ $(document).ready(function() {
 					}
 					else
 					{
-						console.log("Could not perform follow");
+						console.log("Could not perform unfollow");
 						console.log(result);
 						$('#num_followers').text(parseInt($('#num_followers').text()) + 1);
 					}
 				},
 				error: function(result){
-					console.log("Could not perform follow");
+					console.log("Could not perform unfollow");
 					console.log(result);
 					$('#num_followers').text(parseInt($('#num_followers').text()) + 1);
 				}

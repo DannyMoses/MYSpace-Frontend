@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>MYSpace</title>
+		<link rel="stylesheet" type="text/css" href="/static/default.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script src="{{url_for('static', filename='post_like.js')}}"></script>
+		<script src="{{url_for('static', filename='post.js')}}"></script>
+	</head>
+
+	<body>
+		<small id="current_user" style="display: none;">{{user}}</small>
+		<small id="current_item" style="display: none;">{{item_id}}</small>
+
+		<input id="nav_back" class="nav_btn" type="button" value="Back">
+
+		<!-- Post -->
+		<div id="post" style="display: none;">
+			<h3 id="post_text"></h3><br>
+			<h5 id="post_media"></h5><br>
+			<h5 id="post_author" style="display: none;"></h5><br>
+			<h5 id="post_parent" style="display: none;"></h5><br>
+
+			<small id="num_likes"></small>
+			<small id="num_retweets"></small><br>
+
+			<input id="like_btn" type="button" value="Like" style="display: none;">
+			<input id="unlike_btn" type="button" value="Unlike" style="display: none;">
+			<input id="retweet_btn" type="button" value="Retweet" style="display: none;">
+			<input id="reply_btn" type="button" value="Reply" style="display: none;">
+			<input id="delete_btn" type="button" value="Reply" style="display: none;">
+		</div>
+
+		<!-- Reply -->
+		<div id="reply_div" class="form_div" style="display: none;">
+			<form id="reply_form">
+				Text: <input type="text" name="content">
+				<input id="addreply_btn" type="submit" value="Submit">
+			</form>
+		</div>
+
+	</body>
+</html>
+

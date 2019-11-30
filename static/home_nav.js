@@ -3,11 +3,17 @@ console.log('Nav functions loaded');
 $(document).ready(function() {
 	// Button Binding
 	$('#nav_login').bind('click', function(){
+		//Hide current form, show new form
 		$('.form_div').hide();
 		$('#login_div').show();
 
+		// Hide message
 		$('#message').hide();
+
+		// Hide/clear item-specific commands
+		$('#like_btn').hide();
 		$('#delete_btn').hide();
+		$('#current_msg').text("");
 	});
 
 	$('#nav_register').bind('click', function(){
@@ -15,7 +21,10 @@ $(document).ready(function() {
 		$('#register_div').show();
 
 		$('#message').hide();
+
+		$('#like_btn').hide();
 		$('#delete_btn').hide();
+		$('#current_msg').text("");
 	});
 
 	$('#nav_verify').bind('click', function(){
@@ -23,7 +32,10 @@ $(document).ready(function() {
 		$('#verify_div').show();
 
 		$('#message').hide();
+
+		$('#like_btn').hide();
 		$('#delete_btn').hide();
+		$('#current_msg').text("");
 	});
 
 	$('#nav_profile').bind('click', function(){
@@ -31,7 +43,10 @@ $(document).ready(function() {
 		$('#profile_div').show();
 
 		$('#message').hide();
+
+		$('#like_btn').hide();
 		$('#delete_btn').hide();
+		$('#current_msg').text("");
 	});
 
 	$('#nav_additem').bind('click', function(){
@@ -39,7 +54,10 @@ $(document).ready(function() {
 		$('#additem_div').show();
 
 		$('#message').hide();
+
+		$('#like_btn').hide();
 		$('#delete_btn').hide();
+		$('#current_msg').text("");
 	});
 
 	$('#nav_getitem').bind('click', function(){
@@ -47,6 +65,10 @@ $(document).ready(function() {
 		$('#getitem_div').show();
 
 		$('#message').hide();
+
+		$('#like_btn').hide();
+		$('#delete_btn').hide();
+		$('#current_msg').text("");
 	});
 
 	$('#nav_search').bind('click', function(){
@@ -54,7 +76,10 @@ $(document).ready(function() {
 		$('#search_div').show();
 
 		$('#message').hide();
+
+		$('#like_btn').hide();
 		$('#delete_btn').hide();
+		$('#current_msg').text("");
 	});
 
 });

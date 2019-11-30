@@ -32,7 +32,26 @@ def home():
 	welcome = "to Moses-Yang Space"
 	if 'user' in session:
 		welcome = session['user']
-	return render_template("home.html", welcome_text=welcome)
+
+	return render_template("home.html",
+			welcome_text=welcome,
+			user=welcome)
+
+@app.route("/post", methods=["GET", "POST"])
+def post():
+	content = request.form
+	app.logger.debug("/post form: " + json.dumps(content))
+
+	user = ""
+	if 'user' in session and session['user'] != content['username']:
+		user = session['user']
+
+	print(content)
+	print(user)
+
+	return render_template("post.html",
+			user=user,
+			item_id=content['uuid'])
 
 @app.route("/profile", methods=["GET", "POST"])
 def profile():
@@ -58,9 +77,19 @@ def profile():
 @app.route("/reset", methods=["POST"])
 def reset_db():
 	app.logger.warning("/reset called")
-	requests.post(url = (http + logins_route + "/reset_logins"))
-	requests.post(url = (http + posts_route + "/reset_posts"))
-	requests.post(url = (http + profiles_route + "/reset_profiles"))
+
+	r = requests.post(url = (http + logins_route + "/reset_logins"))
+	if r.status_code != 200:
+		return { "status": "error", "error": "/reset_logins did not return 200" }, 500
+
+	r = requests.post(url = (http + posts_route + "/reset_posts"))
+	if r.status_code != 200:
+		return { "status": "error", "error": "/reset_posts did not return 200" }, 500
+
+	r = requests.post(url = (http + profiles_route + "/reset_profiles"))
+	if r.status_code != 200:
+		return { "status": "error", "error": "/reset_profiles did not return 200" }, 500
+
 	return { "status": "OK" }, 200
 
 
@@ -89,6 +118,7 @@ def login():
 	data = r.json()
 	print("DATA:", data)
 	app.logger.debug("/login return: " + json.dumps(data))
+	app.logger.debug(r.content)
 	if data["status"] == "OK":
 		session["user"] = content["username"]
 	return jsonify(data), r.status_code

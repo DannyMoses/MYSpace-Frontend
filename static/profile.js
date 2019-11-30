@@ -63,7 +63,7 @@ function format_results(arr, key)
 }
 
 $(document).ready(function() {
-	username = $('#site_header').text()
+	let username = $('#site_header').text()
 
 	$('#posts_form').submit(function(event) {
 		event.preventDefault(); // Prevents default submit action (GET query)
