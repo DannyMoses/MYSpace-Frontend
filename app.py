@@ -46,8 +46,8 @@ def post():
 	if 'user' in session and session['user'] != content['username']:
 		user = session['user']
 
-	print(content)
-	print(user)
+	#print(content)
+	#print(user)
 
 	return render_template("post.html",
 			user=user,
@@ -62,8 +62,8 @@ def profile():
 	if 'user' in session and session['user'] != content['username']:
 		user = session['user']
 
-	print(content)
-	print(user)
+	#print(content)
+	#print(user)
 
 	return render_template("profile.html",
 			username=content['username'],
@@ -78,17 +78,26 @@ def profile():
 def reset_db():
 	app.logger.warning("/reset called")
 
-	r = requests.post(url = (http + logins_route + "/reset_logins"))
-	if r.status_code != 200:
-		return { "status": "error", "error": "/reset_logins did not return 200" }, 500
+	try:
+		r = requests.post(url = (http + logins_route + "/reset_logins"), timeout=3)
+		if r.status_code != 200:
+			return { "status": "error", "error": "/reset_logins did not return 200" }, 500
+	except requests.exceptions.Timeout:
+		return { "status": "error", "error": "/reset_logins timed out after 3s" }, 500
 
-	r = requests.post(url = (http + posts_route + "/reset_posts"))
-	if r.status_code != 200:
-		return { "status": "error", "error": "/reset_posts did not return 200" }, 500
+	try:
+		r = requests.post(url = (http + posts_route + "/reset_posts"), timeout=5)
+		if r.status_code != 200:
+			return { "status": "error", "error": "/reset_posts did not return 200" }, 500
+	except requests.exceptions.Timeout:
+		return { "status": "error", "error": "/reset_posts timed out after 5s" }, 500
 
-	r = requests.post(url = (http + profiles_route + "/reset_profiles"))
-	if r.status_code != 200:
-		return { "status": "error", "error": "/reset_profiles did not return 200" }, 500
+	try:
+		r = requests.post(url = (http + profiles_route + "/reset_profiles"), timeout=3)
+		if r.status_code != 200:
+			return { "status": "error", "error": "/reset_profiles did not return 200" }, 500
+	except requests.exceptions.Timeout:
+		return { "status": "error", "error": "/reset_profiles timed out after 3s" }, 500
 
 	return { "status": "OK" }, 200
 
@@ -97,18 +106,18 @@ def reset_db():
 @app.route("/adduser", methods=["POST"])
 def adduser():
 	content = request.json
-	print("CONTENT", content)
+	#print("CONTENT", content)
 	app.logger.debug("/adduser content: " + json.dumps(content))
 	r = requests.post(url = (http + logins_route + "/adduser"), json=content)
 
 	data = r.json()
-	print("DATA", data)
+	#print("DATA", data)
 	return jsonify(data), r.status_code
 
 @app.route("/login", methods=["POST"])
 def login():
 	content = request.json
-	print("content:", content)
+	#print("content:", content)
 	app.logger.debug("/login json: " + json.dumps(content))
 
 	if 'user' in session:
@@ -116,7 +125,7 @@ def login():
 	r = requests.post(url = (http + logins_route + "/login"), json=content)
 
 	data = r.json()
-	print("DATA:", data)
+	#print("DATA:", data)
 	app.logger.debug("/login return: " + json.dumps(data))
 	app.logger.debug(r.content)
 	if data["status"] == "OK":
@@ -137,6 +146,9 @@ def verify():
 
 	data = r.json()
 
+	app.logger.info(r.status_code)
+	app.logger.debug(json.dumps(data))
+
 	return jsonify(data), r.status_code
 
 
@@ -147,72 +159,95 @@ def get_profile(username):
 	r = requests.get( url = (http + profiles_route + "/user"), json=content )
 
 	data = r.json()
+	app.logger.info(r.status_code)
+	app.logger.debug(json.dumps(data))
 	return jsonify(data), r.status_code
 
 @app.route("/user/<username>/posts", methods=["GET"])
 def get_user_posts(username):
 	content = request.args.to_dict()
 	content['username'] = username
-	print(content)
+	app.logger.debug(json.dumps(content))
+
+	#print(content)
 	if 'limit' in content:
 		content['limit'] = int(content['limit'])
 	r = requests.post( url = (http + profiles_route + "/user/posts"), json=content )
 
 	data = r.json()
+	app.logger.info(r.status_code)
+	app.logger.debug(json.dumps(data))
 	return jsonify(data), r.status_code
 
 @app.route("/user/<username>/followers", methods=["GET"])
 def get_user_followers(username):
 	content = request.args.to_dict()
 	content['username'] = username
+	app.logger.debug(json.dumps(content))
+
 	if 'limit' in content:
 		content['limit'] = int(content['limit'])
 	r = requests.post( url = (http + profiles_route + "/user/followers"), json=content )
 
 	data = r.json()
+	app.logger.info(r.status_code)
+	app.logger.debug(json.dumps(data))
 	return jsonify(data), r.status_code
 
 @app.route("/user/<username>/following", methods=["GET"])
 def get_user_following(username):
 	content = request.args.to_dict()
 	content['username'] = username
+	app.logger.debug(json.dumps(content))
+
 	if 'limit' in content:
 		content['limit'] = int(content['limit'])
 	r = requests.post(url = (http + profiles_route + "/user/following"), json=content)
 
 	data = r.json()
 
+	app.logger.info(r.status_code)
+	app.logger.debug(json.dumps(data))
+
 	return jsonify(data), r.status_code
 
 @app.route("/follow", methods=["POST"])
 def set_follow():
 	if "user" not in session:
-		print("NO ONE LOGGED IN")
-		return jsonify({ "status" : "ERROR", "error" : "Not logged in" }), 200 #400
+		#print("NO ONE LOGGED IN")
+		app.logger.info("No one logged in")
+		return jsonify({ "status" : "error", "error" : "Not logged in" }), 200 #400
 
 	content = request.json
 	content['user'] = session['user']
-	print(content)
-	app.logger.debug("POST /follow json: " + json.dumps(content))
+	#print(content)
+	app.logger.debug("POST /follow json: {}".format(content))
 	r = requests.post(url = (http + profiles_route + "/follow"), json=content)
 
 	data = r.json()
+
+	app.logger.info(r.status_code)
+	app.logger.debug(json.dumps(data))
 
 	return jsonify(data), r.status_code
 
 @app.route("/follow", methods=["GET"])
 def get_follow():
 	if "user" not in session:
-		print("NO ONE LOGGED IN")
-		return jsonify({ "status" : "ERROR", "error" : "Not logged in" }), 200 #400
+		#print("NO ONE LOGGED IN")
+		app.logger.info("No one logged in")
+		return jsonify({ "status" : "error", "error" : "Not logged in" }), 200 #400
 
 	content = request.args.to_dict()
 	content['user'] = session['user']
-	print(content)
+	#print(content)
 	app.logger.debug("GET /follow args: " + json.dumps(content))
 	r = requests.get(url = (http + profiles_route + "/follow"), json=content)
 
 	data = r.json()
+
+	app.logger.info(r.status_code)
+	app.logger.debug(json.dumps(data))
 
 	return jsonify(data), r.status_code
 
@@ -221,14 +256,18 @@ def get_follow():
 @app.route("/additem", methods=["POST"])
 def additem():
 	if "user" not in session:
-		print("NO ONE LOGGED IN")
-		return jsonify({ "status" : "ERROR", "error" : "Not logged in" }), 200 #400
+		#print("NO ONE LOGGED IN")
+		app.logger.info("No one logged in")
+		return jsonify({ "status" : "error", "error" : "Not logged in" }), 403 #400
 
 	content = request.json
 	content["user"] = session["user"]
 	r = requests.post( url = (http + posts_route + "/additem"), json=content)
 
 	data = r.json()
+
+	app.logger.info(r.status_code)
+	app.logger.debug(json.dumps(data))
 
 	return jsonify(data), r.status_code
 
@@ -240,31 +279,38 @@ def getitem(id):
 
 	data = r.json()
 
+	app.logger.info(r.status_code)
+	app.logger.debug(json.dumps(data))
+
 	return jsonify(data), r.status_code
 
 @app.route("/item/<id>", methods=["DELETE"])
 def deleteitem(id):
 	if "user" not in session:
-		print("NO ONE LOGGED IN")
-		return jsonify({ "status" : "ERROR", "error" : "Not logged in" }), 403
+		#print("NO ONE LOGGED IN")
+		app.logger.info("No one logged in")
+		return jsonify({ "status" : "error", "error" : "Not logged in" }), 403
 
 	data = {"id" : id, "user": session['user']}
-	print(80*'=')
-	print("DELETE DATA:", data)
+	#print(80*'=')
+	#print("DELETE DATA:", data)
 	r = requests.delete(url = (http + posts_route + "/item"), json=data)
 
-	#data = r.json()
-
+	data = r.json()
 	#print(data)
-	
-	print("STATUS CODE:", r.status_code)
-	return "RETURN!", r.status_code
+	#print("STATUS CODE:", r.status_code)
+
+	app.logger.info(r.status_code)
+	app.logger.debug(json.dumps(data))
+
+	return jsonify(data), r.status_code
 
 @app.route("/item/<id>/like", methods=["POST"])
 def likeitem(id):
 	if "user" not in session:
-		print("NO ONE LOGGED IN")
-		return jsonify({ "status" : "ERROR", "error" : "Not logged in" }), 200 # 400
+		#print("NO ONE LOGGED IN")
+		app.logger.info("No one logged in")
+		return jsonify({ "status" : "error", "error" : "Not logged in" }), 200 # 400
 
 	data = request.json
 	data['id'] = id
@@ -274,51 +320,61 @@ def likeitem(id):
 
 	data = r.json()
 
+	app.logger.info(r.status_code)
+	app.logger.debug(json.dumps(data))
+
 	return jsonify(data), r.status_code
 
 @app.route("/search", methods=["POST"])
 def search():
 	content = request.json
-	print(content)
+	#print(content)
+	app.logger.debug(content)
 
 	if "user" in session:
 		if 'following' not in content or content['following']:
 			content['user'] = session['user']
 
-	print(content)
-	print(http + posts_route + "/search")
+	#print(content)
+	#print(http + posts_route + "/search")
 
 	r = requests.post(url = (http + posts_route + "/search"), json=content)
 
-	print("request finished")
+	#print("request finished")
 
 	data = r.json()
-	
-	print(80*'=')
-	print("SEARCH DATA:", data)
+	#print(80*'=')
+	#print("SEARCH DATA:", data)
+
+	app.logger.info(r.status_code)
+	app.logger.debug(json.dumps(data))
 
 	return jsonify(data), r.status_code
 
 @app.route("/addmedia", methods=["POST"])
 def addmedia():
-	print("/ADDMEDIA() CALLED")
-	print("DATA", request.values)
+	#print("/ADDMEDIA() CALLED")
+	#print("DATA", request.values)
 	if "user" not in session:
-		print("NO ONE LOGGED IN")
+		#print("NO ONE LOGGED IN")
+		app.logger.info("No one logged in")
 		return jsonify({ "status" : "error", "error" : "Not logged in" }), 200 # 400
 
-	print('dict',request.files)
-	print('content',request.files['content'])
+	#print('dict',request.files)
+	#print('content',request.files['content'])
+	app.logger.debug("dict {}".format(request.files))
+	app.logger.debug("content {}".format(request.files['content']))
 	filename = secure_filename(request.files['content'].filename)
-	mimetype = request.files['content'].content_type
-	#r = requests.post(url = (http + posts_route + "/addmedia"), files={'content': (filename, request.files['content'], mimetype)})
-	r = requests.post(url = (http + posts_route + "/addmedia"), files=request.files, data={"user" : session['user']})
+	#mimetype = request.files['content'].content_type
+	r = requests.post(url = (http + posts_route + "/addmedia"), files={'content': (filename, request.files['content'])}, data={"user" : session['user']})
 
-	print("request finished")
+	#print("request finished")
 	
 	data = r.json()
+	#print(data)
 
-	print(data)
+	app.logger.info(r.status_code)
+	app.logger.debug(json.dumps(data))
 
 	return jsonify(data), r.status_code
 
@@ -328,7 +384,10 @@ def getmedia(id):
 
 	r = requests.get(url = (http + posts_route + "/media"), params=params)
 
-	print(r)
+	app.logger.info(r.status_code)
+	#app.logger.debug(r.content)
+
+	#print(r)
 	#print(r.content)
 
 	return r.content, r.status_code
